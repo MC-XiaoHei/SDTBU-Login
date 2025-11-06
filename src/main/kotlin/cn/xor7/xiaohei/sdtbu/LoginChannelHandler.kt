@@ -4,6 +4,7 @@ package cn.xor7.xiaohei.sdtbu
 
 import cn.xor7.xiaohei.sdtbu.dialogs.buildDialogPacket
 import cn.xor7.xiaohei.sdtbu.utils.*
+import io.netty.channel.Channel
 import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
@@ -16,9 +17,11 @@ import net.minecraft.network.protocol.login.ServerboundHelloPacket
 import net.minecraft.server.network.ServerCommonPacketListenerImpl
 import java.util.*
 
-class LoginChannelHandler(private val connection: Connection) : ChannelDuplexHandler() {
+class LoginChannelHandler(private val channel: Channel) : ChannelDuplexHandler() {
     private lateinit var name: String
     private lateinit var uuid: UUID
+    private val connection = channel.pipeline().get(BASE_HANDLER_NAME) as? Connection
+        ?: throw IllegalStateException("Connection handler not found in pipeline")
 
     @Volatile
     private var loginSucceeded: Boolean = false
@@ -29,21 +32,22 @@ class LoginChannelHandler(private val connection: Connection) : ChannelDuplexHan
             return
         }
         val packetListener = connection.getPacketListener() ?: run {
-            connection.disconnect(internalError)
+            ctx.kick(internalError)
             return
         }
         serverPacketListenerClosedField.set(packetListener, false)
-        ctx.writeAndFlush(buildDialogPacket(name))
+        ctx.writeAndFlush(buildDialogPacket())
         runTaskLater(600) {
-            connection.disconnect(loginTimeout)
+            ctx.kick(loginTimeout)
         }
     }
 
     override fun channelRead(ctx: ChannelHandlerContext, packet: Any) {
         val continueProcess = when (packet) {
             is ServerboundHelloPacket -> processServerboundHelloPacket(packet)
-            is ServerboundCustomClickActionPacket -> processServerboundCustomClickActionPacket(packet)
+            is ServerboundCustomClickActionPacket -> processServerboundCustomClickActionPacket(ctx, packet)
             is ServerboundFinishConfigurationPacket -> loginSucceeded
+
             else -> true
         }
         if (continueProcess) super.channelRead(ctx, packet)
@@ -55,15 +59,24 @@ class LoginChannelHandler(private val connection: Connection) : ChannelDuplexHan
         return true
     }
 
-    private fun processServerboundCustomClickActionPacket(packet: ServerboundCustomClickActionPacket): Boolean {
-        when(packet.id) {
+    private fun processServerboundCustomClickActionPacket(
+        ctx: ChannelHandlerContext,
+        packet: ServerboundCustomClickActionPacket,
+    ): Boolean {
+        when (packet.id) {
             loginPacketId if packet.payload.isPresent -> {
-
+                if (true) { // TODO
+                    ctx.writeAndFlush(ClientboundFinishConfigurationPacket.INSTANCE)
+                    loginSucceeded = true
+                    channel.pipeline().remove(HANDLER_NAME)
+                } else {
+                    ctx.kick(wrongPassword)
+                }
                 return true
             }
 
             cancelPacketId -> {
-                connection.disconnect(loginCanceled)
+                ctx.kick(loginCanceled)
                 return false
             }
 

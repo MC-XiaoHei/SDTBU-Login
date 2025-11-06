@@ -12,34 +12,29 @@ import net.minecraft.server.dialog.input.TextInput
 import java.util.Optional.empty
 import java.util.Optional.of
 
-fun buildDialogPacket(name: String) = ClientboundShowDialogPacket(Holder.direct(buildLoginDialog(name)))
+fun buildDialogPacket() = ClientboundShowDialogPacket(Holder.direct(buildLoginDialog()))
 
-private fun buildLoginDialog(name: String): Dialog {
-    return MultiActionDialog(
-        CommonDialogData(
-            literal("登录").withColor(0x66ccff),
-            of(literal("欢迎你 $name").withColor(0xccffcc)),
-            false, true, DialogAction.CLOSE,
-            mutableListOf<DialogBody>(),
-            listOf(
-                Input(
-                    "password",
-                    TextInput(200, literal("密码"), true, "", 200, empty()),
-                ),
-            ),
-        ),
+private fun buildLoginDialog() = ConfirmationDialog(
+    CommonDialogData(
+        literal("登录"),
+        empty(),
+        false,
+        true,
+        DialogAction.CLOSE,
+        mutableListOf<DialogBody>(),
         listOf(
-            ActionButton(
-                CommonButtonData(literal("登录"), empty(), 100),
-                of(CustomAll(loginPacketId, empty())),
+            Input(
+                "password",
+                TextInput(200, literal("密码"), true, "", 200, empty()),
             ),
         ),
-        of(
-            ActionButton(
-                CommonButtonData(literal("退出"), empty(), 100),
-                of(CustomAll(cancelPacketId, empty())),
-            ),
-        ),
-        3,
-    )
-}
+    ),
+    ActionButton(
+        CommonButtonData(literal("登录"), empty(), 150),
+        of(CustomAll(loginPacketId, empty())),
+    ),
+    ActionButton(
+        CommonButtonData(literal("退出"), empty(), 150),
+        of(CustomAll(cancelPacketId, empty())),
+    ),
+)
