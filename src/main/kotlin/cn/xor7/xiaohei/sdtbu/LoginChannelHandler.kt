@@ -1,0 +1,85 @@
+@file:Suppress("SpellCheckingInspection")
+
+package cn.xor7.xiaohei.sdtbu
+
+import cn.xor7.xiaohei.sdtbu.dialogs.buildDialogPacket
+import cn.xor7.xiaohei.sdtbu.utils.*
+import io.netty.channel.ChannelDuplexHandler
+import io.netty.channel.ChannelHandlerContext
+import io.netty.channel.ChannelPromise
+import net.kyori.adventure.key.Key
+import net.minecraft.network.Connection
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket
+import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket
+import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket
+import net.minecraft.network.protocol.login.ServerboundHelloPacket
+import net.minecraft.server.network.ServerCommonPacketListenerImpl
+import java.util.*
+
+class LoginChannelHandler(private val connection: Connection) : ChannelDuplexHandler() {
+    private lateinit var name: String
+    private lateinit var uuid: UUID
+
+    @Volatile
+    private var loginSucceeded: Boolean = false
+
+    override fun write(ctx: ChannelHandlerContext, msg: Any, promise: ChannelPromise) {
+        if (msg !is ClientboundFinishConfigurationPacket) {
+            super.write(ctx, msg, promise)
+            return
+        }
+        val packetListener = connection.getPacketListener() ?: run {
+            connection.disconnect(internalError)
+            return
+        }
+        serverPacketListenerClosedField.set(packetListener, false)
+        ctx.writeAndFlush(buildDialogPacket(name))
+        runTaskLater(600) {
+            connection.disconnect(loginTimeout)
+        }
+    }
+
+    override fun channelRead(ctx: ChannelHandlerContext, packet: Any) {
+        val continueProcess = when (packet) {
+            is ServerboundHelloPacket -> processServerboundHelloPacket(packet)
+            is ServerboundCustomClickActionPacket -> processServerboundCustomClickActionPacket(packet)
+            is ServerboundFinishConfigurationPacket -> loginSucceeded
+            else -> true
+        }
+        if (continueProcess) super.channelRead(ctx, packet)
+    }
+
+    private fun processServerboundHelloPacket(packet: ServerboundHelloPacket): Boolean {
+        this.name = packet.name
+        this.uuid = packet.profileId
+        return true
+    }
+
+    private fun processServerboundCustomClickActionPacket(packet: ServerboundCustomClickActionPacket): Boolean {
+        when(packet.id) {
+            loginPacketId if packet.payload.isPresent -> {
+
+                return true
+            }
+
+            cancelPacketId -> {
+                connection.disconnect(loginCanceled)
+                return false
+            }
+
+            else -> {
+                return true
+            }
+        }
+    }
+
+    companion object {
+        const val HANDLER_NAME = "login_channel_handler"
+        const val BASE_HANDLER_NAME = "packet_handler"
+        val listenerKey = Key.key(pluginNamespace, HANDLER_NAME)
+        private val serverPacketListenerClosedField = accessField<Boolean>(
+            ServerCommonPacketListenerImpl::class,
+            "closed",
+        )
+    }
+}
