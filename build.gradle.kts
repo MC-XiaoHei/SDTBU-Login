@@ -57,6 +57,10 @@ dependencies {
     apply `plugin dependencies`@{
         implementation(libs.springSecurityCrypto)
         implementation(libs.bouncyCastle)
+        implementation(libs.exposedCore)
+        implementation(libs.exposedJdbc)
+        implementation(libs.hikaricp)
+        implementation(libs.sqliteJdbc)
         implementation(kotlin("stdlib-jdk8"))
     }
 

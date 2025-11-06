@@ -2,6 +2,8 @@
 
 package cn.xor7.xiaohei.sdtbu
 
+import cn.xor7.xiaohei.sdtbu.database.login
+import cn.xor7.xiaohei.sdtbu.dialogs.LOGIN_PASSWORD_INPUT_ID
 import cn.xor7.xiaohei.sdtbu.dialogs.buildDialogPacket
 import cn.xor7.xiaohei.sdtbu.utils.*
 import io.netty.channel.Channel
@@ -9,6 +11,7 @@ import io.netty.channel.ChannelDuplexHandler
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
 import net.kyori.adventure.key.Key
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.network.Connection
 import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket
 import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket
@@ -65,7 +68,13 @@ class LoginChannelHandler(private val channel: Channel) : ChannelDuplexHandler()
     ): Boolean {
         when (packet.id) {
             loginPacketId if packet.payload.isPresent -> {
-                if (true) { // TODO
+                val tag = packet.payload.get() as? CompoundTag ?: run {
+                    ctx.kick(internalError)
+                    return false
+                }
+                val password = tag.getStringOr(LOGIN_PASSWORD_INPUT_ID, "")
+                val studentId = login(uuid, name, password)
+                if (studentId != null) {
                     ctx.writeAndFlush(ClientboundFinishConfigurationPacket.INSTANCE)
                     loginSucceeded = true
                     channel.pipeline().remove(HANDLER_NAME)

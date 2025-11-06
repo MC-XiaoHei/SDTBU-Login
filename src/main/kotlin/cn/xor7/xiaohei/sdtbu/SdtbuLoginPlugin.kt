@@ -1,5 +1,6 @@
 package cn.xor7.xiaohei.sdtbu
 
+import cn.xor7.xiaohei.sdtbu.utils.initDb
 import io.papermc.paper.network.ChannelInitializeListenerHolder
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -11,8 +12,16 @@ class SdtbuLoginPlugin : JavaPlugin() {
     }
 
     override fun onEnable() {
-        ChannelInitializeListenerHolder.addListener(LoginChannelHandler.listenerKey) { channel ->
+        initDb()
+        addChannelListener()
+    }
 
+    override fun onDisable() {
+        removeChannelListener()
+    }
+
+    private fun addChannelListener() {
+        ChannelInitializeListenerHolder.addListener(LoginChannelHandler.listenerKey) { channel ->
             channel.pipeline().addBefore(
                 LoginChannelHandler.BASE_HANDLER_NAME,
                 LoginChannelHandler.HANDLER_NAME,
@@ -21,7 +30,7 @@ class SdtbuLoginPlugin : JavaPlugin() {
         }
     }
 
-    override fun onDisable() {
+    private fun removeChannelListener() {
         ChannelInitializeListenerHolder.removeListener(LoginChannelHandler.listenerKey)
     }
 }

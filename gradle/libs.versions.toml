@@ -6,12 +6,19 @@ runPaper = "2.3.1"
 resourceFactory = "1.0.0"
 springSecurityCrypto = "6.5.6"
 bouncyCastle = "1.82"
+exposed = "1.0.0-rc-2"
+sqliteJdbc = "3.51.0.0"
+hikaricp = "7.0.2"
 
 [libraries]
 leavesApi = { group = "org.leavesmc.leaves", name = "leaves-api", version.ref = "leavesApi" }
 leavesDevBundle = { group = "org.leavesmc.leaves", name = "dev-bundle", version.ref = "leavesApi" }
 springSecurityCrypto = { group = "org.springframework.security", name = "spring-security-crypto", version.ref = "springSecurityCrypto" }
 bouncyCastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncyCastle" }
+exposedCore = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposedJdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+sqliteJdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqliteJdbc" }
+hikaricp = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikaricp" }
 
 [plugins]
 leavesweightUserdev = { id = "org.leavesmc.leavesweight.userdev", version.ref = "leavesweightUserdev" }

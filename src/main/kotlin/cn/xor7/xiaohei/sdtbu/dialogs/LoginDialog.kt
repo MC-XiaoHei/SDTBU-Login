@@ -12,6 +12,8 @@ import net.minecraft.server.dialog.input.TextInput
 import java.util.Optional.empty
 import java.util.Optional.of
 
+const val LOGIN_PASSWORD_INPUT_ID = "login_password"
+
 fun buildDialogPacket() = ClientboundShowDialogPacket(Holder.direct(buildLoginDialog()))
 
 private fun buildLoginDialog() = ConfirmationDialog(
@@ -24,7 +26,7 @@ private fun buildLoginDialog() = ConfirmationDialog(
         mutableListOf<DialogBody>(),
         listOf(
             Input(
-                "password",
+                LOGIN_PASSWORD_INPUT_ID,
                 TextInput(200, literal("密码"), true, "", 200, empty()),
             ),
         ),
