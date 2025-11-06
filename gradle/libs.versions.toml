@@ -4,10 +4,14 @@ leavesweightUserdev = "2.0.0-SNAPSHOT"
 shadow = "9.0.0-rc1"
 runPaper = "2.3.1"
 resourceFactory = "1.0.0"
+springSecurityCrypto = "6.5.6"
+bouncyCastle = "1.82"
 
 [libraries]
 leavesApi = { group = "org.leavesmc.leaves", name = "leaves-api", version.ref = "leavesApi" }
 leavesDevBundle = { group = "org.leavesmc.leaves", name = "dev-bundle", version.ref = "leavesApi" }
+springSecurityCrypto = { group = "org.springframework.security", name = "spring-security-crypto", version.ref = "springSecurityCrypto" }
+bouncyCastle = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncyCastle" }
 
 [plugins]
 leavesweightUserdev = { id = "org.leavesmc.leavesweight.userdev", version.ref = "leavesweightUserdev" }

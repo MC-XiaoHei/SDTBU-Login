@@ -55,6 +55,8 @@ sourceSets {
 
 dependencies {
     apply `plugin dependencies`@{
+        implementation(libs.springSecurityCrypto)
+        implementation(libs.bouncyCastle)
         implementation(kotlin("stdlib-jdk8"))
     }
 
