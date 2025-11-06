@@ -13,6 +13,8 @@ val wrongPassword: Component = literal("密码错误")
 
 fun ChannelHandlerContext.kick(message: Component) {
     writeAndFlush(ClientboundClearDialogPacket.INSTANCE)
-    writeAndFlush(ClientboundDisconnectPacket(message))
-    disconnect()
+    runTaskLater(1) {
+        writeAndFlush(ClientboundDisconnectPacket(message))
+        disconnect()
+    }
 }

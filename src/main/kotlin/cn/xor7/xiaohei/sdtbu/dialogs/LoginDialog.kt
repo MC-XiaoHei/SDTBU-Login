@@ -2,9 +2,7 @@ package cn.xor7.xiaohei.sdtbu.dialogs
 
 import cn.xor7.xiaohei.sdtbu.utils.cancelPacketId
 import cn.xor7.xiaohei.sdtbu.utils.loginPacketId
-import net.minecraft.core.Holder
 import net.minecraft.network.chat.Component.literal
-import net.minecraft.network.protocol.common.ClientboundShowDialogPacket
 import net.minecraft.server.dialog.*
 import net.minecraft.server.dialog.action.CustomAll
 import net.minecraft.server.dialog.body.DialogBody
@@ -14,9 +12,7 @@ import java.util.Optional.of
 
 const val LOGIN_PASSWORD_INPUT_ID = "login_password"
 
-fun buildDialogPacket() = ClientboundShowDialogPacket(Holder.direct(buildLoginDialog()))
-
-private fun buildLoginDialog() = ConfirmationDialog(
+fun buildLoginDialog() = ConfirmationDialog(
     CommonDialogData(
         literal("登录"),
         empty(),

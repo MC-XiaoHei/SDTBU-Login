@@ -19,6 +19,16 @@ object Users : UUIDTable("users") {
     val studentId = varchar("student_id", 32)
 }
 
+private val registered = mutableSetOf<UUID>()
+
+fun initRegisteredUserCache() = transaction {
+    Users.selectAll().forEach {
+        registered.add(it[Users.id].value)
+    }
+}
+
+fun UUID.isRegistered(): Boolean = registered.contains(this)
+
 fun register(
     uuid: UUID,
     username: String,
@@ -31,6 +41,7 @@ fun register(
         it[Users.passwordHash] = hash(password)
         it[Users.studentId] = studentId
     }
+    registered.add(uuid)
 }
 
 fun login(

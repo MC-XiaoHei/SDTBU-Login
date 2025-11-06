@@ -4,7 +4,7 @@ package cn.xor7.xiaohei.sdtbu
 
 import cn.xor7.xiaohei.sdtbu.database.login
 import cn.xor7.xiaohei.sdtbu.dialogs.LOGIN_PASSWORD_INPUT_ID
-import cn.xor7.xiaohei.sdtbu.dialogs.buildDialogPacket
+import cn.xor7.xiaohei.sdtbu.dialogs.buildLoginDialog
 import cn.xor7.xiaohei.sdtbu.utils.*
 import io.netty.channel.Channel
 import io.netty.channel.ChannelDuplexHandler
@@ -20,7 +20,7 @@ import net.minecraft.network.protocol.login.ServerboundHelloPacket
 import net.minecraft.server.network.ServerCommonPacketListenerImpl
 import java.util.*
 
-class LoginChannelHandler(private val channel: Channel) : ChannelDuplexHandler() {
+class SigninChannelHandler(private val channel: Channel) : ChannelDuplexHandler() {
     private lateinit var name: String
     private lateinit var uuid: UUID
     private val connection = channel.pipeline().get(BASE_HANDLER_NAME) as? Connection
@@ -39,8 +39,8 @@ class LoginChannelHandler(private val channel: Channel) : ChannelDuplexHandler()
             return
         }
         serverPacketListenerClosedField.set(packetListener, false)
-        ctx.writeAndFlush(buildDialogPacket())
-        runTaskLater(600) {
+        ctx.showDialog(buildLoginDialog())
+        runTaskLater(20 * 60) {
             ctx.kick(loginTimeout)
         }
     }
@@ -96,7 +96,7 @@ class LoginChannelHandler(private val channel: Channel) : ChannelDuplexHandler()
     }
 
     companion object {
-        const val HANDLER_NAME = "login_channel_handler"
+        const val HANDLER_NAME = "signin_channel_handler"
         const val BASE_HANDLER_NAME = "packet_handler"
         val listenerKey = Key.key(pluginNamespace, HANDLER_NAME)
         private val serverPacketListenerClosedField = accessField<Boolean>(
