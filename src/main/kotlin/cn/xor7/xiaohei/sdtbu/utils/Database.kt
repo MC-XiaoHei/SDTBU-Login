@@ -1,6 +1,6 @@
 package cn.xor7.xiaohei.sdtbu.utils
 
-import cn.xor7.xiaohei.sdtbu.database.Users
+import cn.xor7.xiaohei.sdtbu.database.OfflineUsers
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.bukkit.plugin.java.JavaPlugin
@@ -35,6 +35,6 @@ private fun buildHikariConfig(dbPath: String) = HikariConfig().apply {
 
 private fun initSchema() = transaction {
     SchemaUtils.create(
-        Users,
+        OfflineUsers,
     )
 }

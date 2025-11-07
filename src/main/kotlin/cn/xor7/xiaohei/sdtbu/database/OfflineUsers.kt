@@ -13,7 +13,7 @@ import java.util.*
 @JvmInline
 value class StudentId(val value: String)
 
-object Users : UUIDTable("users") {
+object OfflineUsers : UUIDTable("offline_users") {
     val username = varchar("username", 32)
     val passwordHash = varchar("password_hash", 255)
     val studentId = varchar("student_id", 32)
@@ -21,43 +21,44 @@ object Users : UUIDTable("users") {
 
 private val registered = mutableSetOf<UUID>()
 
-fun initRegisteredUserCache() = transaction {
-    Users.selectAll().forEach {
-        registered.add(it[Users.id].value)
+fun initRegisteredOfflineUserCache() = transaction {
+    OfflineUsers.selectAll().forEach {
+        registered.add(it[OfflineUsers.id].value)
     }
 }
 
-fun UUID.isRegistered(): Boolean = registered.contains(this)
+fun UUID.isRegisteredOffline(): Boolean = registered.contains(this)
 
-fun register(
+fun registerOffline(
     uuid: UUID,
     username: String,
     password: String,
     studentId: String,
 ) = transaction {
-    Users.insert {
-        it[Users.id] = uuid
-        it[Users.username] = username
-        it[Users.passwordHash] = hash(password)
-        it[Users.studentId] = studentId
+    val user = OfflineUsers.insert {
+        it[OfflineUsers.id] = uuid
+        it[OfflineUsers.username] = username
+        it[OfflineUsers.passwordHash] = hash(password)
+        it[OfflineUsers.studentId] = studentId
     }
     registered.add(uuid)
+    StudentId(user[OfflineUsers.studentId])
 }
 
-fun login(
+fun loginOffline(
     uuid: UUID,
     username: String,
     password: String,
 ): StudentId? = transaction {
-    val user = Users
+    val user = OfflineUsers
         .selectAll()
-        .where { (Users.id eq uuid) and (Users.username eq username) }
+        .where { (OfflineUsers.id eq uuid) and (OfflineUsers.username eq username) }
         .firstOrNull()
         ?: return@transaction null
 
-    val storedHash = user[Users.passwordHash]
+    val storedHash = user[OfflineUsers.passwordHash]
     if (verify(password, storedHash)) {
-        StudentId(user[Users.studentId])
+        StudentId(user[OfflineUsers.studentId])
     } else {
         null
     }

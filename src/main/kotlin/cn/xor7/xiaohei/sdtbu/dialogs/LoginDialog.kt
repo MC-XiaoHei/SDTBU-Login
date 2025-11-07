@@ -23,7 +23,7 @@ fun buildLoginDialog() = ConfirmationDialog(
         listOf(
             Input(
                 LOGIN_PASSWORD_INPUT_ID,
-                TextInput(200, literal("密码"), true, "", 200, empty()),
+                TextInput(200, literal("密码"), true, "", 50, empty()),
             ),
         ),
     ),
