@@ -1,6 +1,7 @@
 package cn.xor7.xiaohei.sdtbu.dialogs
 
 import cn.xor7.xiaohei.sdtbu.utils.offlineRegisterPacketId
+import cn.xor7.xiaohei.sdtbu.utils.registerCancelPacketId
 import net.minecraft.network.chat.Component.literal
 import net.minecraft.server.dialog.*
 import net.minecraft.server.dialog.action.CustomAll
@@ -42,6 +43,6 @@ fun buildOfflineRegisterDialog() = ConfirmationDialog(
     ),
     ActionButton(
         CommonButtonData(literal("退出"), empty(), 150),
-        of(CustomAll(offlineRegisterPacketId, empty())),
+        of(CustomAll(registerCancelPacketId, empty())),
     ),
 )

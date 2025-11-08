@@ -77,7 +77,8 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
         loginPacketId if packet.payload.isPresent -> processLoginPacket(ctx, packet)
         offlineRegisterPacketId if packet.payload.isPresent -> processOfflineRegisterPacket(ctx, packet)
         onlineRegisterPacketId if packet.payload.isPresent -> processOnlineRegisterPacket(ctx, packet)
-        cancelPacketId -> processCancelPacket(ctx)
+        loginCancelPacketId -> processLoginCancelPacket(ctx)
+        registerCancelPacketId -> processRegisterCancelPacket(ctx)
         else -> true
     }
 
@@ -154,8 +155,13 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
         return true
     }
 
-    private fun processCancelPacket(ctx: ChannelHandlerContext): Boolean {
+    private fun processLoginCancelPacket(ctx: ChannelHandlerContext): Boolean {
         ctx.kick(loginCanceled)
+        return false
+    }
+
+    private fun processRegisterCancelPacket(ctx: ChannelHandlerContext): Boolean {
+        ctx.kick(registerCanceled)
         return false
     }
 

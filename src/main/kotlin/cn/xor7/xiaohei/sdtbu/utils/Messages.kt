@@ -8,6 +8,7 @@ import net.minecraft.network.protocol.common.ClientboundDisconnectPacket
 
 val internalError: Component = literal("内部错误")
 val loginCanceled: Component = literal("取消登录")
+val registerCanceled: Component = literal("取消注册")
 val loginTimeout: Component = literal("登录超时")
 val wrongPassword: Component = literal("密码错误")
 val emptyPassword: Component = literal("密码不能为空")
@@ -19,6 +20,5 @@ fun ChannelHandlerContext.kick(message: Component) {
     writeAndFlush(ClientboundClearDialogPacket.INSTANCE)
     runTaskLater(1) {
         writeAndFlush(ClientboundDisconnectPacket(message))
-        disconnect()
     }
 }

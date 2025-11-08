@@ -1,6 +1,6 @@
 package cn.xor7.xiaohei.sdtbu.dialogs
 
-import cn.xor7.xiaohei.sdtbu.utils.cancelPacketId
+import cn.xor7.xiaohei.sdtbu.utils.loginCancelPacketId
 import cn.xor7.xiaohei.sdtbu.utils.loginPacketId
 import net.minecraft.network.chat.Component.literal
 import net.minecraft.server.dialog.*
@@ -33,6 +33,6 @@ fun buildLoginDialog() = ConfirmationDialog(
     ),
     ActionButton(
         CommonButtonData(literal("退出"), empty(), 150),
-        of(CustomAll(cancelPacketId, empty())),
+        of(CustomAll(loginCancelPacketId, empty())),
     ),
 )
