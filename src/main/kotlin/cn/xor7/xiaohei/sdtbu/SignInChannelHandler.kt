@@ -37,7 +37,7 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
         }
         serverPacketListenerClosedField.set(packetListener, false)
 
-        if (uuid.isRegisteredOnline()) {
+        if (connection.isOnline() && uuid.isRegisteredOnline()) {
             ctx.passSignIn()
             return
         }
