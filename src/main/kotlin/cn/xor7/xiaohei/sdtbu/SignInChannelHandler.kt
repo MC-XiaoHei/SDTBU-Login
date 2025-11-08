@@ -2,9 +2,7 @@
 
 package cn.xor7.xiaohei.sdtbu
 
-import cn.xor7.xiaohei.sdtbu.database.isRegisteredOffline
-import cn.xor7.xiaohei.sdtbu.database.loginOffline
-import cn.xor7.xiaohei.sdtbu.database.registerOffline
+import cn.xor7.xiaohei.sdtbu.database.*
 import cn.xor7.xiaohei.sdtbu.dialogs.*
 import cn.xor7.xiaohei.sdtbu.utils.*
 import io.netty.channel.Channel
@@ -38,10 +36,17 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
             return
         }
         serverPacketListenerClosedField.set(packetListener, false)
+
+        if (uuid.isRegisteredOnline()) {
+            ctx.passSignIn()
+            return
+        }
         val dialog = if (uuid.isRegisteredOffline()) {
             buildLoginDialog()
+        } else if (connection.isOnline()) {
+            buildOnlineRegisterDialog()
         } else {
-            buildRegisterDialog()
+            buildOfflineRegisterDialog()
         }
         ctx.showDialog(dialog)
         runTaskLater(20 * 60) {
@@ -70,7 +75,8 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
         packet: ServerboundCustomClickActionPacket,
     ): Boolean = when (packet.id) {
         loginPacketId if packet.payload.isPresent -> processLoginPacket(ctx, packet)
-        registerPacketId if packet.payload.isPresent -> processRegisterPacket(ctx, packet)
+        offlineRegisterPacketId if packet.payload.isPresent -> processOfflineRegisterPacket(ctx, packet)
+        onlineRegisterPacketId if packet.payload.isPresent -> processOnlineRegisterPacket(ctx, packet)
         cancelPacketId -> processCancelPacket(ctx)
         else -> true
     }
@@ -96,7 +102,7 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
         return true
     }
 
-    private fun processRegisterPacket(
+    private fun processOfflineRegisterPacket(
         ctx: ChannelHandlerContext,
         packet: ServerboundCustomClickActionPacket,
     ): Boolean {
@@ -104,8 +110,8 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
             ctx.kick(internalError)
             return false
         }
-        val password = tag.getString(REGISTER_PASSWORD_INPUT_ID).getOrNull()
-        val repeatPassword = tag.getString(REGISTER_REPEAT_PASSWORD_INPUT_ID).getOrNull()
+        val password = tag.getString(OFFLINE_REGISTER_PASSWORD_INPUT_ID).getOrNull()
+        val repeatPassword = tag.getString(OFFLINE_REGISTER_REPEAT_PASSWORD_INPUT_ID).getOrNull()
         if (password != repeatPassword) {
             ctx.kick(passwordMismatch)
             return false
@@ -114,7 +120,7 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
             ctx.kick(emptyPassword)
             return false
         }
-        val studentId = tag.getString(REGISTER_STUDENT_ID_INPUT_ID).getOrNull() ?: run {
+        val studentId = tag.getString(OFFLINE_REGISTER_STUDENT_ID_INPUT_ID).getOrNull() ?: run {
             ctx.kick(studentIdRequired)
             return false
         }
@@ -123,6 +129,27 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
             return false
         }
         registerOffline(uuid, name, password, studentId)
+        ctx.passSignIn()
+        return true
+    }
+
+    private fun processOnlineRegisterPacket(
+        ctx: ChannelHandlerContext,
+        packet: ServerboundCustomClickActionPacket,
+    ): Boolean {
+        val tag = packet.payload.get() as? CompoundTag ?: run {
+            ctx.kick(internalError)
+            return false
+        }
+        val studentId = tag.getString(ONLINE_REGISTER_STUDENT_ID_INPUT_ID).getOrNull() ?: run {
+            ctx.kick(studentIdRequired)
+            return false
+        }
+        if (!isValidStudentId(studentId)) {
+            ctx.kick(invalidStudentId)
+            return false
+        }
+        registerOnline(uuid, studentId)
         ctx.passSignIn()
         return true
     }

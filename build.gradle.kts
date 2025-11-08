@@ -22,6 +22,11 @@ val pluginJson = leavesPluginJson {
     description = "sdtbu login plugin"
     foliaSupported = false
     apiVersion = libs.versions.leavesApi.extractMCVersion()
+    features.required.add("mixin")
+    mixin.apply {
+        packageName = "cn.xor7.xiaohei.sdtbu.mixin"
+        mixins.add("sdtbu-login.mixins.json")
+    }
 }
 
 val runServerPlugins = runPaper.downloadPluginsSpec {
@@ -45,13 +50,20 @@ repositories {
     mavenLocal()
 }
 
+
 sourceSets {
+    create("mixin") {
+        java.srcDir("mixin/java")
+        resources.srcDir("mixin/resources")
+    }
+
     main {
         resourceFactory {
             factories(pluginJson.resourceFactory())
         }
     }
 }
+val mixinSourceSet: SourceSet = sourceSets["mixin"]
 
 dependencies {
     apply `plugin dependencies`@{
@@ -68,6 +80,16 @@ dependencies {
         compileOnly(libs.leavesApi)
         paperweight.devBundle(libs.leavesDevBundle)
     }
+
+    apply `mixin dependencies`@{
+        compileOnly(mixinSourceSet.output)
+        mixinSourceSet.apply {
+            val compileOnly = compileOnlyConfigurationName
+
+            compileOnly(libs.spongeMixin)
+            compileOnly(files(getMappedServerJar()))!!
+        }
+    }
 }
 
 tasks {
@@ -75,6 +97,7 @@ tasks {
         downloadsApiService.set(leavesDownloadApiService())
         downloadPlugins.from(runServerPlugins)
         minecraftVersion(libs.versions.leavesApi.extractMCVersion())
+        systemProperty("leavesclip.enable.mixin", true)
         systemProperty("file.encoding", Charsets.UTF_8.name())
     }
 
@@ -87,7 +110,12 @@ tasks {
         }
     }
 
+    named<JavaCompile>("compileMixinJava") {
+        dependsOn("paperweightUserdevSetup")
+    }
+
     shadowJar {
+        from(mixinSourceSet.output)
         archiveFileName = "${project.name}-${version}.jar"
     }
 
@@ -105,6 +133,11 @@ java {
         toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
     }
 }
+
+fun getMappedServerJar(): String = File(rootDir, ".gradle")
+    .resolve("caches/paperweight/taskCache/mappedServerJar.jar")
+    .path
+
 
 fun Provider<String>.extractMCVersion(): String {
     val versionString = this.get()

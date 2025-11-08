@@ -1,5 +1,6 @@
 package cn.xor7.xiaohei.sdtbu.database
 
+import cn.xor7.xiaohei.sdtbu.utils.StudentId
 import cn.xor7.xiaohei.sdtbu.utils.hash
 import cn.xor7.xiaohei.sdtbu.utils.verify
 import org.jetbrains.exposed.v1.core.and
@@ -9,9 +10,6 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import java.util.*
-
-@JvmInline
-value class StudentId(val value: String)
 
 object OfflineUsers : UUIDTable("offline_users") {
     val username = varchar("username", 32)
