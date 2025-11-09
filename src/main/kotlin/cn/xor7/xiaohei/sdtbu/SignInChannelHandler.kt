@@ -23,6 +23,7 @@ import kotlin.jvm.optionals.getOrNull
 class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler() {
     private lateinit var name: String
     private lateinit var uuid: UUID
+    private var success = false
     private val connection = channel.pipeline().get(BASE_HANDLER_NAME) as? Connection
         ?: throw IllegalStateException("Connection handler not found in pipeline")
 
@@ -53,7 +54,7 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
         }
         ctx.showDialog(dialog)
         runTaskLater(20 * 60) {
-            ctx.kick(loginTimeout)
+            if (!success) ctx.kick(loginTimeout)
         }
     }
 
@@ -173,6 +174,7 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
     }
 
     private fun ChannelHandlerContext.passSignIn() {
+        success = true
         val packetListener = connection.getPacketListener() ?: run {
             kick(internalError)
             return
