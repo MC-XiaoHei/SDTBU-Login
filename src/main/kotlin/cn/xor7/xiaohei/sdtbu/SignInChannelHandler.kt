@@ -41,11 +41,14 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
             ctx.passSignIn()
             return
         }
-        val dialog = if (uuid.isRegisteredOffline()) {
-            buildLoginDialog()
-        } else if (connection.isOnline()) {
+        val dialog = if (connection.isOnline()) {
+            println("[SDTBU-Login] Online registration for user $name ($uuid)")
             buildOnlineRegisterDialog()
+        } else if (uuid.isRegisteredOffline()) {
+            println("[SDTBU-Login] Offline login for user $name ($uuid)")
+            buildLoginDialog()
         } else {
+            println("[SDTBU-Login] Offline registration for user $name ($uuid)")
             buildOfflineRegisterDialog()
         }
         ctx.showDialog(dialog)
@@ -170,9 +173,12 @@ class SignInChannelHandler(private val channel: Channel) : ChannelDuplexHandler(
     }
 
     private fun ChannelHandlerContext.passSignIn() {
-        runTaskLater(1) {
-            writeAndFlush(ClientboundFinishConfigurationPacket.INSTANCE)
+        val packetListener = connection.getPacketListener() ?: run {
+            kick(internalError)
+            return
         }
+        serverPacketListenerClosedField.set(packetListener, true)
+        writeAndFlush(ClientboundFinishConfigurationPacket.INSTANCE)
         channel.pipeline().remove(HANDLER_NAME)
     }
 

@@ -20,7 +20,7 @@ fun initRegisteredOnlineUserCache() = transaction {
     }
 }
 
-fun Connection.isOnline(): Boolean = hostname.startsWith("online.")
+fun Connection.isOnline(): Boolean = hostname.startsWith("online")
 
 fun UUID.isRegisteredOnline(): Boolean = registered.contains(this)
 

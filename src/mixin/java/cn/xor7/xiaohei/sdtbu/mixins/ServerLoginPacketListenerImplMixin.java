@@ -23,6 +23,6 @@ public abstract class ServerLoginPacketListenerImplMixin {
             )
     )
     private boolean redirectUsesAuthentication(MinecraftServer server) {
-        return connection.hostname.startsWith("online.");
+        return connection.hostname.startsWith("online");
     }
 }
